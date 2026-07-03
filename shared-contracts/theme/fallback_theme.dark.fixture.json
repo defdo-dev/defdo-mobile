@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "theme_version": "fallback-dark-1",
+  "mode": "dark",
+  "tokens": {
+    "color.background.primary": "#0B0D10",
+    "color.background.surface": "#151922",
+    "color.text.primary": "#F7F8FA",
+    "color.text.muted": "#AAB1BD",
+    "color.action.primary.background": "#7EA2FF",
+    "color.action.primary.text": "#05070A",
+    "color.status.success.background": "#103B2A",
+    "color.status.warning.text": "#FFE08A",
+    "color.input.border.default": "#3A4050",
+    "color.input.border.focused": "#7EA2FF"
+  }
+}

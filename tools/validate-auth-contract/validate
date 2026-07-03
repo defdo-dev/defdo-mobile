@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+
+ROOT = File.expand_path("../..", __dir__)
+DIR = File.join(ROOT, "shared-contracts", "auth")
+REQUIRED = %w[
+  defdo_auth_mobile_contract.json
+  pkce.test_vectors.json
+  discovery.success.fixture.json
+  discovery.invalid.fixture.json
+  authorization_request.expected.json
+  authorization_request.golden_url.json
+  token.success.fixture.json
+  token.error.fixture.json
+  refresh.success.fixture.json
+  refresh.invalid_grant.fixture.json
+  revoke.success.fixture.json
+  revoke.failure.fixture.json
+  auth_error_normalization.json
+  auth_redaction_rules.json
+].freeze
+
+def read_json(path)
+  JSON.parse(File.read(path))
+rescue JSON::ParserError => e
+  abort("#{path}: invalid JSON: #{e.message}")
+end
+
+missing = REQUIRED.reject { |file| File.file?(File.join(DIR, file)) }
+abort("missing auth contract files: #{missing.join(", ")}") unless missing.empty?
+
+contract = read_json(File.join(DIR, "defdo_auth_mobile_contract.json"))
+required_params = %w[response_type client_id redirect_uri scope state code_challenge code_challenge_method]
+missing_params = required_params - contract.fetch("required_authorization_params", [])
+abort("auth contract missing params: #{missing_params.join(", ")}") unless missing_params.empty?
+abort("auth contract must use S256") unless contract["code_challenge_method"] == "S256"
+abort("defdo_auth_client must remain oracle") unless contract["oracle"] == "defdo_auth_client"
+abort("auth contract must not be runtime SDK") unless contract["runtime_mobile_sdk"] == false
+
+expected = read_json(File.join(DIR, "authorization_request.expected.json"))
+missing_expected = required_params - expected.keys
+abort("authorization fixture missing fields: #{missing_expected.join(", ")}") unless missing_expected.empty?
+abort("authorization fixture must use response_type=code") unless expected["response_type"] == "code"
+abort("authorization fixture must use S256") unless expected["code_challenge_method"] == "S256"
+
+golden = read_json(File.join(DIR, "authorization_request.golden_url.json"))
+abort("golden URL fixture missing expected_url") unless golden["expected_url"]
+abort("golden URL must use %20 for spaces") if golden["expected_url"].include?("+")
+
+success = read_json(File.join(DIR, "discovery.success.fixture.json"))
+%w[issuer authorization_endpoint token_endpoint revocation_endpoint].each do |field|
+  abort("discovery success missing #{field}") unless success[field]
+end
+
+invalid_grant = read_json(File.join(DIR, "refresh.invalid_grant.fixture.json"))
+abort("invalid_grant must require login") unless invalid_grant["requires_login"] == true
+abort("invalid_grant must clear local session") unless invalid_grant["clear_local_session"] == true
+
+revoke_failure = read_json(File.join(DIR, "revoke.failure.fixture.json"))
+abort("revoke failure must still clear local session") unless revoke_failure["clear_local_session"] == true
+
+redaction = read_json(File.join(DIR, "auth_redaction_rules.json"))
+%w[access_token refresh_token id_token code code_verifier claims].each do |key|
+  abort("redaction rules missing #{key}") unless redaction.fetch("redact_keys", []).include?(key)
+end
+abort("redaction rules missing redact_headers") unless redaction.key?("redact_headers")
+abort("redaction rules missing redact_callback_url") unless redaction.key?("redact_callback_url")
+abort("redaction rules missing redact_claims_values") unless redaction.key?("redact_claims_values")
+redaction.fetch("redact_headers", []).tap do |h|
+  abort("redaction headers missing authorization") unless h.include?("authorization")
+  abort("redaction headers missing set-cookie") unless h.include?("set-cookie")
+end
+
+puts "auth contract valid"

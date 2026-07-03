@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+
+ROOT = File.expand_path("../..", __dir__)
+DIR = File.join(ROOT, "shared-contracts", "theme")
+REQUIRED = %w[
+  theme_token_schema.json
+  fallback_theme.light.fixture.json
+  fallback_theme.dark.fixture.json
+  theme.success.fixture.json
+  theme.missing_required_token.fixture.json
+  theme.invalid_color.fixture.json
+  theme.low_contrast.fixture.json
+  theme_redaction_rules.json
+].freeze
+
+def read_json(path)
+  JSON.parse(File.read(path))
+rescue JSON::ParserError => e
+  abort("#{path}: invalid JSON: #{e.message}")
+end
+
+missing = REQUIRED.reject { |file| File.file?(File.join(DIR, file)) }
+abort("missing theme contract files: #{missing.join(", ")}") unless missing.empty?
+
+schema = read_json(File.join(DIR, "theme_token_schema.json"))
+required_tokens = schema.fetch("required_tokens")
+abort("theme schema must declare required tokens") if required_tokens.empty?
+
+%w[fallback_theme.light.fixture.json fallback_theme.dark.fixture.json theme.success.fixture.json].each do |file|
+  fixture = read_json(File.join(DIR, file))
+  tokens = fixture.fetch("tokens", {})
+  missing_tokens = required_tokens - tokens.keys
+  abort("#{file} missing tokens: #{missing_tokens.join(", ")}") unless missing_tokens.empty?
+  tokens.each do |name, value|
+    abort("#{file} token #{name} has invalid color #{value}") unless value.match?(/\A#[0-9A-Fa-f]{6}\z/)
+  end
+end
+
+missing_fixture = read_json(File.join(DIR, "theme.missing_required_token.fixture.json"))
+abort("missing-token fixture should be invalid") if (required_tokens - missing_fixture.fetch("tokens", {}).keys).empty?
+
+invalid_color = read_json(File.join(DIR, "theme.invalid_color.fixture.json"))
+abort("invalid-color fixture should include bad color") if invalid_color.fetch("tokens", {}).values.all? { |value| value.match?(/\A#[0-9A-Fa-f]{6}\z/) }
+
+puts "theme contract valid"

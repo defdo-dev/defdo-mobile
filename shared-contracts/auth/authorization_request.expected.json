@@ -1,0 +1,10 @@
+{
+  "response_type": "code",
+  "client_id": "defdo-telecom-mobile-dev",
+  "redirect_uri": "https://login.defdo-telecom.example/mobile/oauth/callback",
+  "scope": "openid profile offline_access selfcare:read",
+  "state": "expected-state",
+  "nonce": "expected-nonce",
+  "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+  "code_challenge_method": "S256"
+}

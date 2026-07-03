@@ -1,0 +1,4 @@
+{
+  "issuer": "https://auth.defdo.example",
+  "authorization_endpoint": "https://auth.defdo.example/oauth/authorize"
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "theme_version": "invalid-color-1",
+  "mode": "light",
+  "tokens": {
+    "color.background.primary": "white",
+    "color.background.surface": "#F4F6F8",
+    "color.text.primary": "#101418",
+    "color.text.muted": "#4B5563",
+    "color.action.primary.background": "#145DCC",
+    "color.action.primary.text": "#FFFFFF",
+    "color.status.success.background": "#DDF8E8",
+    "color.status.warning.text": "#5C4100",
+    "color.input.border.default": "#AEB7C2",
+    "color.input.border.focused": "#145DCC"
+  }
+}

@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store
+
+# Kotlin
+.kotlin/
+
+# Java
+*.hprof
+
+# Local properties
+local.properties
+
+# iOS
+ios/**/DerivedData/
+ios/**/*.xcworkspace/xcuserdata/
+ios/**/*.xcodeproj/xcuserdata/
+ios/**/.build/
+ios/**/Packages/
+xcuserdata/
+*.xcuserstate

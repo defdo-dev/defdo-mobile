@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+
+ROOT = File.expand_path("../..", __dir__)
+DIR = File.join(ROOT, "shared-contracts", "brand")
+SCHEMA = File.join(DIR, "brand_manifest_schema.json")
+SAMPLE = File.join(DIR, "sample.defdo-telecom.dev.manifest.json")
+
+def read_json(path)
+  JSON.parse(File.read(path))
+rescue JSON::ParserError => e
+  abort("#{path}: invalid JSON: #{e.message}")
+end
+
+def dig_path(hash, path)
+  path.split(".").reduce(hash) { |node, key| node.is_a?(Hash) ? node[key] : nil }
+end
+
+abort("missing brand schema") unless File.file?(SCHEMA)
+abort("missing sample brand manifest") unless File.file?(SAMPLE)
+
+schema = read_json(SCHEMA)
+manifest = read_json(SAMPLE)
+
+missing = schema.fetch("required_fields").reject { |path| dig_path(manifest, path) }
+abort("brand manifest missing fields: #{missing.join(", ")}") unless missing.empty?
+
+abort("android application_id must be non-empty") if manifest.dig("android", "application_id").to_s.empty?
+abort("ios bundle_id must be non-empty") if manifest.dig("ios", "bundle_id").to_s.empty?
+abort("auth client_id must be public metadata") if manifest.dig("auth", "client_id").to_s.empty?
+
+puts "brand manifest valid"

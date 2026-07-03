@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleDisplayName</key>
+    <string>Defdo SelfCare</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundlePackageType</key>
+    <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <true/>
+    </dict>
+    <key>UILaunchScreen</key>
+    <dict/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <!-- Dev-only custom URL scheme for OAuth smoke when Universal Links are
+         not yet verified. Production must rely on verified Universal Links. -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>dev.defdo.selfcare.oauth</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>defdo.selfcare.dev</string>
+            </array>
+        </dict>
+    </array>
+    <!-- Dev OAuth / BFF config. Non-secret defaults only; production builds
+         inject these via build settings / CI secrets. See
+         docs/mobile_device_smoke_runbook.md for registration checklist. -->
+    <key>DEFDO_DEV_ISSUER</key>
+    <string>http://localhost:4000</string>
+    <key>DEFDO_DEV_DISCOVERY_URL</key>
+    <string>http://localhost:4000/.well-known/openid-configuration</string>
+    <key>DEFDO_DEV_CLIENT_ID</key>
+    <string>aed48d8c-8bf8-4d8b-abac-fc18ea3a4da2</string>
+    <key>DEFDO_DEV_REDIRECT_URI</key>
+    <string>defdo.selfcare.dev://oauth.callback</string>
+    <key>DEFDO_DEV_SCOPES</key>
+    <string>openid profile offline_access</string>
+    <key>DEFDO_BACKEND_BASE_URL</key>
+    <string>http://localhost:4002</string>
+    <key>DEFDO_ENVIRONMENT</key>
+    <string>dev</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>localhost</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+                <key>NSIncludesSubdomains</key>
+                <true/>
+            </dict>
+        </dict>
+    </dict>
+</dict>
+</plist>

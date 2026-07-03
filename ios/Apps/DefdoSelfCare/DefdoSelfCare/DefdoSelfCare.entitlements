@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Universal Links / associated domains for verified OAuth callbacks.
+         Replace the domain with the tenant-specific login host for each
+         environment. Dev-only: the example domain below will not verify until
+         the apple-app-site-association file is deployed. -->
+    <key>com.apple.developer.associated-domains</key>
+    <array>
+        <string>applinks:login.defdo-telecom.example</string>
+    </array>
+    <!-- Keychain access group for DefdoAuthMobile secure token storage.
+         The wildcard group allows the app and any future app extension to
+         share the same Keychain item. Production builds should use an explicit
+         App Group if extensions need access. -->
+    <key>keychain-access-groups</key>
+    <array>
+        <string>$(AppIdentifierPrefix)dev.defdo.selfcare</string>
+    </array>
+</dict>
+</plist>

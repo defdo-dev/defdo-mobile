@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "theme_version": "low-contrast-1",
+  "mode": "light",
+  "tokens": {
+    "color.background.primary": "#FFFFFF",
+    "color.background.surface": "#FFFFFF",
+    "color.text.primary": "#FFFFFF",
+    "color.text.muted": "#EEEEEE",
+    "color.action.primary.background": "#FFFFFF",
+    "color.action.primary.text": "#FFFFFE",
+    "color.status.success.background": "#DDF8E8",
+    "color.status.warning.text": "#5C4100",
+    "color.input.border.default": "#AEB7C2",
+    "color.input.border.focused": "#145DCC"
+  }
+}

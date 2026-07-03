@@ -1,0 +1,4 @@
+{
+  "redact_keys": ["raw_payload", "authorization", "access_token"],
+  "replacement": "[REDACTED]"
+}
