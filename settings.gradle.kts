@@ -30,6 +30,7 @@ rootProject.name = "defdo-mobile"
 
 include(":android:modules:auth")
 include(":android:modules:auth-android")
+include(":android:modules:selfcare-core")
 include(":android:modules:theme")
 include(":android:apps:dev-auth-harness")
 include(":android:apps:defdo-selfcare")
