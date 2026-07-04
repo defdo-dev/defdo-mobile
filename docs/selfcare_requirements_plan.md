@@ -1,0 +1,132 @@
+# Defdo SelfCare — Requirements & Slice Plan
+
+Status: draft accepted 2026-07-04. Owner: solo dev (paridin).
+Scope: Android (`android/apps/defdo-selfcare`) + iOS (`ios/Apps/DefdoSelfCare`).
+API owner: **defdo_my_mvno** (target). **core_graph** serves interim endpoints
+that will migrate to defdo_my_mvno behind the same `/mobile/*` BFF contract —
+the apps must never care which backend answers.
+
+## Product goals (from mockups)
+
+1. Show consumption (data dial, minutes, validity days, current network).
+2. Top-ups / balance recharges.
+3. Network diagnostics (SIM/data/APN/roaming/signal checklist, RSRP/SINR/band,
+   cell id) feeding support tickets.
+4. Promotions (banners, "doble de GB" style offers).
+5. FAQs.
+6. Invoice requests (CFDI).
+7. Line linking (multi-line accounts).
+8. Support hub: show SPN/APN config (name, APN, SMSC with copy buttons) and
+   open the right OS settings screen when possible.
+
+## Non-negotiable rules (already enforced by S0)
+
+- Auth only through defdo_auth (public PKCE client, discovery-driven).
+- The app never sends `brand_code`, `brand_key`, `app_key`, `theme_code`, or
+  `tenant` as authority — backend derives context from the OAuth client +
+  AccessContext.
+- Tokens only in Keychain/Keystore; never logged.
+- All `/mobile/*` calls carry only the bearer token.
+- Theme from `/mobile/theme` with embedded fallback (done).
+
+## Slices
+
+Each slice is independently shippable: contract → backend (interim/final) →
+Android → iOS → fixture tests in shared-contracts.
+
+### S0 — Foundation (DONE)
+Auth (PKCE, discovery fixtures, secure storage), `POST /mobile/bootstrap`,
+`GET /mobile/theme`, app shells, AGP 9 / SPM toolchains, CI-able tests.
+
+### S1 — Consumption dashboard (FIRST)
+- Contract: `GET /mobile/usage` → active plan name, data used/total (per
+  bucket: normal/social/promo), minutes/SMS state, days remaining, current
+  network type, balance.
+- Backend: **core_graph interim** (current packages exist there today);
+  migrate to defdo_my_mvno later, same shape.
+- Apps: home screen dial (14.2 GB style), buckets breakdown, "Datos OK / Voz
+  OK" chips.
+- Fixtures: `shared-contracts/selfcare/usage.success.fixture.json`,
+  empty-plan, suspended-line variants.
+- Acceptance: dial renders from fixture on both platforms; pull-to-refresh;
+  cached last snapshot offline.
+
+### S2 — Package catalog + detail
+- Contract: `GET /mobile/catalog` → packages (price MXN, GB, vigencia, tags:
+  recomendado/social/viajero), filters (duración/GB).
+- Backend: **core_graph interim** (packages already queryable) → defdo_my_mvno.
+- Apps: "Paquetes Disponibles" list + detail sheet. Purchase button disabled
+  until S3.
+- Acceptance: catalog renders from fixture; filter chips work; detail shows
+  full package facts.
+
+### S3 — Top-ups / purchase
+- Contract: `POST /mobile/orders` (package_id) → order + payment session URL
+  or token; `GET /mobile/orders/:id` for status polling.
+- Backend: defdo_my_mvno orchestrates with defdo_checkout/defdo_payments.
+  Payment UI = system browser / payment sheet, never card data in-app.
+- Acceptance: happy path (paid → provisioned), pending, failed, idempotent
+  retry. No PCI surface in the app.
+
+### S4 — Network diagnostics + APN/SPN support
+- On-device (no backend): SIM detected, data enabled, roaming state, signal.
+  - Android: `TelephonyManager` (SPN via `getSimOperatorName()`,
+    `READ_PHONE_STATE`), RSRP/SINR/band/cell id via `CellInfo` (needs
+    `ACCESS_FINE_LOCATION` — degrade gracefully if denied). Open APN screen
+    with `Settings.ACTION_APN_SETTINGS` intent.
+  - iOS: radio details are NOT readable (CoreTelephony carrier info is
+    deprecated/redacted since iOS 16) and APN settings cannot be opened
+    programmatically. iOS shows: connectivity checklist (reachability, data
+    path), the expected APN/SMSC values with copy buttons, and optionally a
+    `.mobileconfig` APN profile download served by the backend.
+- Backend: `GET /mobile/network-profile` → expected SPN, APN name, SMSC,
+  roaming policy per brand (drives the "Copiar configuración" screen).
+- Ticket handoff: `POST /mobile/tickets` with diagnostic payload
+  (checklist results + metrics; NEVER tokens/identifiers beyond line ref).
+- Acceptance: checklist mirrors mockup; "Abrir Ticket de Soporte" creates a
+  ticket with attached diagnostics; Android opens APN settings; iOS shows
+  copy-config screen.
+
+### S5 — Support hub + FAQs
+- Contract: `GET /mobile/faqs` (sections, markdown answers, cacheable/ETag),
+  `GET /mobile/tickets` + detail for follow-up.
+- Backend: defdo_my_mvno (content may originate in defdo_cms).
+- Acceptance: FAQ list offline-cached; ticket list shows status timeline.
+
+### S6 — Promotions
+- Contract: `GET /mobile/promotions` → banners (image URL, title, body,
+  optional deeplink to catalog item), validity window.
+- Apps: home carousel ("Promociones para ti") + "Ver todas".
+- Acceptance: hidden when empty; images cached; deeplink lands on S2 detail.
+
+### S7 — Invoices (CFDI)
+- Contract: `POST /mobile/invoices` (order_id + fiscal data ref),
+  `GET /mobile/invoices` list with PDF/XML links.
+- Backend: defdo_my_mvno + sat_mexico. Fiscal data captured once, stored
+  server-side; app never persists RFC locally beyond form state.
+- Acceptance: request invoice for a paid order; list shows issued docs.
+
+### S8 — Line linking (LAST)
+- Contract: `POST /mobile/lines/link` (msisdn + OTP challenge),
+  `GET /mobile/lines`, switch active line context.
+- Explicitly out of scope until S1–S7 are stable (was also excluded from the
+  discovery validation milestone).
+
+## Cross-cutting backlog
+
+- Runtime discovery wiring (fetch `discoveryURL` async at startup instead of
+  synthesizing endpoints) — pending on both platforms; libraries ready.
+- `swift test` in CI (host machines with CommandLineTools cannot run XCTest).
+- Register the selfcare OAuth client on the live tenant (exact redirect URI,
+  scopes `openid profile offline_access`).
+- core_graph: `actor_apis` entry for the mobile client_id +
+  `bootstrap_enabled`/`theme_enabled` actor metadata.
+- Every new `/mobile/*` contract gets a fixture pair in `shared-contracts/`
+  before platform work starts (same discipline as auth/theme).
+
+## Sequencing
+
+S1 → S2 can start now against core_graph (packages/balance already exist
+there). S4's on-device half has zero backend dependency and can run in
+parallel. S3 blocks on defdo_my_mvno order orchestration; S5–S7 are
+defdo_my_mvno-first; S8 last.
