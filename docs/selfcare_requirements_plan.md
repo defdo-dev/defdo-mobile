@@ -2,9 +2,12 @@
 
 Status: draft accepted 2026-07-04. Owner: solo dev (paridin).
 Scope: Android (`android/apps/defdo-selfcare`) + iOS (`ios/Apps/DefdoSelfCare`).
-API owner: **defdo_my_mvno** (target). **core_graph** serves interim endpoints
-that will migrate to defdo_my_mvno behind the same `/mobile/*` BFF contract —
-the apps must never care which backend answers.
+API owner: **defdo_my_mvno** owns the entire `/mobile/*` BFF from day one —
+the apps talk to a single host and the contract never migrates. **core_graph**
+stays a data source only: consumption/packages live there for practicality and
+defdo_my_mvno reads them server-to-server (M2M client_credentials against
+defdo_auth). Later that data may also sync into defdo_my_mvno without any app
+change.
 
 ## Product goals (from mockups)
 
@@ -42,8 +45,9 @@ Auth (PKCE, discovery fixtures, secure storage), `POST /mobile/bootstrap`,
 - Contract: `GET /mobile/usage` → active plan name, data used/total (per
   bucket: normal/social/promo), minutes/SMS state, days remaining, current
   network type, balance.
-- Backend: **core_graph interim** (current packages exist there today);
-  migrate to defdo_my_mvno later, same shape.
+- Backend: **defdo_my_mvno** serves the endpoint; it reads usage/balance from
+  core_graph server-side (M2M). Proxy per-request initially (fresh data),
+  cache/sync later if latency demands it.
 - Apps: home screen dial (14.2 GB style), buckets breakdown, "Datos OK / Voz
   OK" chips.
 - Fixtures: `shared-contracts/selfcare/usage.success.fixture.json`,
@@ -54,7 +58,8 @@ Auth (PKCE, discovery fixtures, secure storage), `POST /mobile/bootstrap`,
 ### S2 — Package catalog + detail
 - Contract: `GET /mobile/catalog` → packages (price MXN, GB, vigencia, tags:
   recomendado/social/viajero), filters (duración/GB).
-- Backend: **core_graph interim** (packages already queryable) → defdo_my_mvno.
+- Backend: **defdo_my_mvno** serves it; catalog data pulled from core_graph
+  (sync/cache is fine here — catalog changes rarely).
 - Apps: "Paquetes Disponibles" list + detail sheet. Purchase button disabled
   until S3.
 - Acceptance: catalog renders from fixture; filter chips work; detail shows
@@ -144,7 +149,8 @@ Auth (PKCE, discovery fixtures, secure storage), `POST /mobile/bootstrap`,
 
 ## Sequencing
 
-S1 → S2 can start now against core_graph (packages/balance already exist
-there). S4's on-device half has zero backend dependency and can run in
-parallel. S3 blocks on defdo_my_mvno order orchestration; S5–S7 are
-defdo_my_mvno-first; S8 last.
+S1 → S2 start with the defdo_my_mvno BFF endpoints backed by core_graph data
+(M2M read — core_graph work is limited to exposing/authorizing that read).
+S4's on-device half has zero backend dependency and runs in parallel. S3
+blocks on defdo_my_mvno order orchestration; S5–S7 are defdo_my_mvno-first;
+S8 last.
