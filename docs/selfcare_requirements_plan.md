@@ -30,7 +30,9 @@ change.
   AccessContext.
 - Tokens only in Keychain/Keystore; never logged.
 - All `/mobile/*` calls carry only the bearer token.
-- Theme from `/mobile/theme` with embedded fallback (done).
+- Theme from `/mobile/theme` with embedded fallback (done). Note: defdo_my_mvno
+  already integrates **defdo_theme_hub** directly — theme does NOT depend on
+  core_graph; when the BFF moves, `/mobile/theme` is served from theme_hub.
 
 ## Slices
 
@@ -42,6 +44,11 @@ Auth (PKCE, discovery fixtures, secure storage), `POST /mobile/bootstrap`,
 `GET /mobile/theme`, app shells, AGP 9 / SPM toolchains, CI-able tests.
 
 ### S1 — Consumption dashboard (FIRST)
+
+> **Contract status: DRAFT.** The real consumption API may differ (the
+> canonical structure lives in the `core` repo that core_graph is based on).
+> Fixtures in `shared-contracts/selfcare/` are a proposal for negotiation —
+> do not wire live clients until defdo_my_mvno confirms the shape.
 - Contract: `GET /mobile/usage` → active plan name, data used/total (per
   bucket: normal/social/promo), minutes/SMS state, days remaining, current
   network type, balance.
