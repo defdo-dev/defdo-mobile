@@ -1,6 +1,0 @@
-{
-  "error": "invalid_grant",
-  "error_description": "Refresh token is invalid or expired.",
-  "requires_login": true,
-  "clear_local_session": true
-}

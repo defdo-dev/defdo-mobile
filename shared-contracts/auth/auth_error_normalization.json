@@ -1,6 +1,0 @@
-{
-  "invalid_request": "invalid_request",
-  "invalid_grant": "requires_login",
-  "temporarily_unavailable": "retryable",
-  "access_denied": "user_cancelled"
-}
