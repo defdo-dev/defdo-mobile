@@ -1,0 +1,9 @@
+[submodule "shared-contracts"]
+	path = shared-contracts
+	url = https://github.com/defdo-dev/defdo-mobile-shared-contracts.git
+[submodule "android"]
+	path = android
+	url = https://github.com/defdo-dev/defdo-mobile-android.git
+[submodule "ios"]
+	path = ios
+	url = https://github.com/defdo-dev/defdo-mobile-ios.git
