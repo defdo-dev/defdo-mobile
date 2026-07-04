@@ -83,8 +83,26 @@ Auth (PKCE, discovery fixtures, secure storage), `POST /mobile/bootstrap`,
   roaming policy per brand (drives the "Copiar configuración" screen).
 - Ticket handoff: `POST /mobile/tickets` with diagnostic payload
   (checklist results + metrics; NEVER tokens/identifiers beyond line ref).
-- Acceptance: checklist mirrors mockup; "Abrir Ticket de Soporte" creates a
-  ticket with attached diagnostics; Android opens APN settings; iOS shows
+- **Carrier-mandatory ticket fields: cell details (Cell ID / band) and
+  coordinates (lat/lon).** Without them the provider cannot see the case and
+  it has to be raised through alternate manual channels — the app must treat
+  them as required:
+  - Android: auto-captured — Cell ID/band from `CellInfo`, coordinates from
+    fused location. Both behind runtime permission prompts; if the user
+    denies location, block ticket submission with a clear "required by
+    carrier" explanation and a re-prompt path.
+  - iOS: coordinates auto-captured via CoreLocation (permission prompt).
+    Cell ID/band have NO public API — not obtainable with any permission or
+    entitlement. Field Test Mode (`*3001#12345#*`) is an Apple-internal app
+    that cannot be launched or read programmatically (private APIs = App
+    Store rejection). Ticket flow therefore includes a guided step:
+    instructions to dial `*3001#12345#*`, where to find the serving Cell ID,
+    and a validated manual entry field. The backend may additionally resolve
+    the serving cell provider-side from MSISDN + timestamp + coordinates.
+- Acceptance: checklist mirrors mockup; "Abrir Ticket de Soporte" refuses to
+  submit without cell details + coordinates and explains why; Android
+  auto-fills both; iOS auto-fills coordinates and walks the user through
+  Field Test for the Cell ID; Android opens APN settings; iOS shows
   copy-config screen.
 
 ### S5 — Support hub + FAQs
