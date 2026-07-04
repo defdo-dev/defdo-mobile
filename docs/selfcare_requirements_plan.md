@@ -142,6 +142,22 @@ Auth (PKCE, discovery fixtures, secure storage), `POST /mobile/bootstrap`,
 - Explicitly out of scope until S1–S7 are stable (was also excluded from the
   discovery validation milestone).
 
+### S1 satellites (after S1 contract freeze)
+
+- **S1p — Top-up reminder pushes (PRIORITY, most requested)**: server-side
+  reminder engine on consumption/expiry events (core already emits
+  `consumption_notification`) with cooldown/quiet-hours; delivery via
+  defdo_notification_hub (APNs/FCM per brand); `POST /mobile/devices` token
+  registry; deeplink into recarga (S3) or catalog (S2). No PII/balances in
+  push payloads. (defdo-mobile#15)
+- **S1w — Apple Watch companion**: watch renders the UsageSnapshot pushed
+  from the iPhone via WatchConnectivity; complication with remaining GB; the
+  watch never authenticates or stores tokens. Requires full Xcode.
+  (defdo-mobile#13)
+- **S1x — Home-screen widgets**: iOS WidgetKit (App Group shared snapshot) +
+  Android Glance (DataStore cache + WorkManager refresh); no tokens in widget
+  processes. (defdo-mobile#14)
+
 ## Cross-cutting backlog
 
 - Runtime discovery wiring (fetch `discoveryURL` async at startup instead of
