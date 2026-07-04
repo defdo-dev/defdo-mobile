@@ -25,6 +25,7 @@ ios/**/DerivedData/
 ios/**/*.xcworkspace/xcuserdata/
 ios/**/*.xcodeproj/xcuserdata/
 ios/**/.build/
-ios/**/Packages/
+# Do not ignore ios/**/Packages/: DefdoAuthMobile and DefdoThemeMobile live there.
+ios/**/.swiftpm/
 xcuserdata/
 *.xcuserstate
