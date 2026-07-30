@@ -525,9 +525,9 @@ Do not implement:
 
 ```sh
 # Contracts
-tools/validate-brand-manifest/validate
-tools/validate-auth-contract/validate
-tools/validate-theme-contract/validate
+elixir tools/validate-brand-manifest/validate.exs
+elixir tools/validate-auth-contract/validate.exs
+elixir tools/validate-theme-contract/validate.exs
 
 # iOS
 swift test --package-path ios/Packages/DefdoAuthMobile
